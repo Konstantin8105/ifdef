@@ -83,7 +83,7 @@ func main() {
 		cmd := exec.Command("gofmt", "-w", *outputFile)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %v", err)
+			fmt.Fprintf(os.Stderr, "Error in gofmt: %v", err)
 			return
 		}
 		fmt.Fprintf(osStdout, string(out))
@@ -133,17 +133,18 @@ func change() error {
 	ps := []string(pres)
 
 	lines := bytes.Split(b, []byte("\n"))
-	var addComment bool
+	var buf bytes.Buffer
+	addLine := true
 	for i := range lines {
 		// beginToken
 		index := bytes.Index(lines[i], []byte(beginToken))
 		if index >= 0 {
 			// get name
 			name := strings.TrimSpace(string(lines[i][index+len(beginToken):]))
-			addComment = true
+			addLine = true
 			for j := range ps {
 				if name == ps[j] {
-					addComment = false
+					addLine = false
 					break
 				}
 			}
@@ -154,27 +155,17 @@ func change() error {
 		index = bytes.Index(lines[i], []byte(finishToken))
 		if index >= 0 {
 			// get name
-			addComment = false
+			addLine = true
 			continue
 		}
 
-		tmp := string(lines[i])
-		tmp = strings.TrimSpace(tmp)
-		hasComment := strings.HasPrefix(tmp, "//")
-
-		if addComment && hasComment {
-			continue
-		}
-		if addComment {
-			lines[i] = append([]byte("/"+"/"), lines[i]...)
+		if !addLine {
 			continue
 		}
 
-		// remove begin comment
-		if hasComment {
-			lines[i] = bytes.Replace(lines[i], []byte("// "), []byte(""), 1)
-		}
+		buf.Write(lines[i])
+		buf.Write([]byte("\n"))
 	}
 
-	return ioutil.WriteFile(*outputFile, bytes.Join(lines, []byte("\n")), 0644)
+	return ioutil.WriteFile(*outputFile, buf.Bytes(), 0644)
 }
