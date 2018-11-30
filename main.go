@@ -80,10 +80,19 @@ func main() {
 	}
 
 	if *gofmtFlag {
-		cmd := exec.Command("gofmt", "-w", *outputFile)
+		// gofmt
+		cmd := exec.Command("gofmt", "-s", "-w", *outputFile)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error in gofmt: %v", err)
+			return
+		}
+		fmt.Fprintf(osStdout, string(out))
+		// goimports
+		cmd = exec.Command("goimports", "-w", *outputFile)
+		out, err = cmd.CombinedOutput()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error in goimports: %v", err)
 			return
 		}
 		fmt.Fprintf(osStdout, string(out))
