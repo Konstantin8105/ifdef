@@ -16,6 +16,21 @@ controlled text
 go install
 ```
 
+### CLI commands
+
+```cmd
+./ifdef -h
+# Usage of ./ifdef:
+#  -f	gofmt output file
+#  -i string
+#    	name of input Go source
+#  -l	show list of preprocessor names
+#  -o string
+#    	name of output Go source
+#  -p value
+#    	allowable preprocessors #ifdef...#endif
+```
+
 ### Example on test file
 
 ```cmd
