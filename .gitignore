@@ -13,3 +13,6 @@
 
 # Application
 ifdef
+
+# Test data
+testdata/*.go
