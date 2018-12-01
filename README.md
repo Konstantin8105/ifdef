@@ -22,14 +22,14 @@ go install
 
 ```cmd
 ./ifdef -h
-# Usage of ./ifdef:
+#Usage of ./ifdef:
 #  -f	gofmt output file
 #  -i string
 #    	name of input Go source
 #  -l	show list of preprocessor names
 #  -o string
 #    	name of output Go source
-#  -p value
+#  -p string
 #    	allowable preprocessors #ifdef...#endif
 ```
 

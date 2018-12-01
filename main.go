@@ -17,37 +17,22 @@ const (
 	finishToken = "#endif"
 )
 
-type arrayStrings []string
-
-func (a *arrayStrings) String() string {
-	return fmt.Sprintf("%v", []string(*a))
-}
-
-func (a *arrayStrings) Set(value string) error {
-	v := []string(*a)
-	v = append(v, value)
-	*a = arrayStrings(v)
-	return nil
-}
-
-// flags
 var (
 	listFlag   *bool
 	gofmtFlag  *bool
 	inputFile  *string
 	outputFile *string
-	pres       arrayStrings
+	pres       *string
 )
 
-func init() {
+func main() {
+	// flags
 	listFlag = flag.Bool("l", false, "show list of preprocessor names")
 	gofmtFlag = flag.Bool("f", false, "gofmt output file")
 	inputFile = flag.String("i", "", "name of input Go source")
 	outputFile = flag.String("o", "", "name of output Go source")
-	flag.Var(&pres, "p", "allowable preprocessors #ifdef...#endif")
-}
+	pres = flag.String("p", "", "allowable preprocessors #ifdef...#endif")
 
-func main() {
 	flag.Parse()
 
 	if *inputFile == "" {
@@ -68,7 +53,7 @@ func main() {
 		return
 	}
 
-	if len(([]string)(pres)) == 0 {
+	if *pres == "" {
 		fmt.Fprintf(os.Stderr, "List of allowable preprocessor names is empty")
 		return
 	}
@@ -139,7 +124,7 @@ func change() error {
 		return fmt.Errorf("cannot read file `%s` : %v", *inputFile, err)
 	}
 
-	ps := []string(pres)
+	ps := string(*pres)
 
 	lines := bytes.Split(b, []byte("\n"))
 	var buf bytes.Buffer
@@ -151,11 +136,8 @@ func change() error {
 			// get name
 			name := strings.TrimSpace(string(lines[i][index+len(beginToken):]))
 			addLine = true
-			for j := range ps {
-				if name == ps[j] {
-					addLine = false
-					break
-				}
+			if name == ps {
+				addLine = false
 			}
 			continue
 		}
