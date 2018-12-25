@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"strings"
 	"testing"
+
+	codestyle "github.com/Konstantin8105/cs"
 )
 
 func Test(t *testing.T) {
@@ -141,4 +143,8 @@ func TestIfDef(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCodeStyle(t *testing.T) {
+	codestyle.All(t)
 }

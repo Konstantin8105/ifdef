@@ -77,8 +77,7 @@ func main() {
 		return
 	}
 
-	err := change()
-	if err != nil {
+	if err := change(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
 		return
 	}
