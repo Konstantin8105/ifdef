@@ -5,13 +5,36 @@
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 
-**Preprocessor pattern**:
-```
+### Preprocessor pattern
+
+```golang
 // #ifdef MACRO_NAME
 
 controlled text
 
 // #endif
+```
+
+### Preprocessor key-value pattern
+
+```golang
+// #kv MACRO_NAME key:value
+```
+
+Example:
+```golang
+// #kv Float64 short:F64
+// #kv Float64 type:float64
+// #kv Float32 short:F32
+// #kv Float32 type:float32
+
+// Min#short return minimal of 2 values with type #type
+func Min#short(a,b #type) #type{
+	if a > b {
+		return b
+	}
+	return a
+}
 ```
 
 ### Installation
@@ -25,6 +48,7 @@ go install
 ```cmd
 ./ifdef -h
 ```
+
 ```
 Usage of ./ifdef:
   -i string
