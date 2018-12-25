@@ -1,0 +1,11 @@
+package test
+
+// some comment
+
+// MinF64 return minimal of 2 values with type `float64`
+func MinF64(a, b float64) float64 {
+	if a > b {
+		return b
+	}
+	return a
+}

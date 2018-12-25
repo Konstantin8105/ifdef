@@ -1,0 +1,11 @@
+package test
+
+// some comment
+
+// MinF32 return minimal of 2 values with type `float32`
+func MinF32(a, b float32) float32 {
+	if a > b {
+		return b
+	}
+	return a
+}

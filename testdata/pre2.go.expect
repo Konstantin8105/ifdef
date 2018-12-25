@@ -1,0 +1,10 @@
+package test
+
+// some comment
+
+// a2 function return zero value of float64
+func a2() float64 {
+	// templorary variable
+	b := 0
+	return b
+}

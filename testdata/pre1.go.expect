@@ -1,0 +1,10 @@
+package test
+
+// some comment
+
+// a1 function return zero value of int
+func a1() int {
+	// templorary variable
+	b := 0
+	return b
+}
