@@ -4,12 +4,38 @@
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-```
-// #ifdef MACRO
+
+### Preprocessor pattern
+
+```golang
+// #ifdef LIST_OF_MACRO_NAMES
 
 controlled text
 
 // #endif
+```
+
+### Preprocessor key-value pattern
+
+```golang
+// #kv MACRO_NAME key:value
+```
+That pattern are removed at the result source.
+
+Example:
+```golang
+// #kv Float64 short:F64
+// #kv Float64 type:float64
+// #kv Float32 short:F32
+// #kv Float32 type:float32
+
+// Min#short return minimal of 2 values with type #type
+func Min#short(a,b #type) #type{
+	if a > b {
+		return b
+	}
+	return a
+}
 ```
 
 ### Installation
@@ -22,15 +48,17 @@ go install
 
 ```cmd
 ./ifdef -h
-#Usage of ./ifdef:
-#  -f	gofmt output file
-#  -i string
-#    	name of input Go source
-#  -l	show list of preprocessor names
-#  -o string
-#    	name of output Go source
-#  -p string
-#    	allowable preprocessors #ifdef...#endif
+```
+
+```
+Usage of ./ifdef:
+  -i string
+    	name of input Go source
+  -l	show list of preprocessor names
+  -o string
+    	name of output Go source
+  -p string
+    	allowable preprocessors #ifdef...#endif
 ```
 
 ### Example on test file
@@ -88,8 +116,8 @@ func a2() float64{
 Example of generate `pre2`:
 
 ```cmd
-# generate file `pre2.go` with preprocessor flag `pre2` with `gofmt` result Go source
-ifdef -p=pre2 -i=./testdata/test.gotmpl -o=./testdata/pre2.go -f
+# generate file `pre2.go` with preprocessor flag `pre2`
+ifdef -p=pre2 -i=./testdata/test.gotmpl -o=./testdata/pre2.go
 ```
 
 

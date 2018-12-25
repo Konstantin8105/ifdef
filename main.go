@@ -7,28 +7,47 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"sort"
 	"strings"
 )
 
 var osStdout *os.File = os.Stdout
 
 const (
-	beginToken  = "#ifdef"
-	finishToken = "#endif"
+	ifdefToken = "#ifdef"
+	kvToken    = "#kv"
+	endToken   = "#endif"
 )
 
 var (
 	listFlag   *bool
-	gofmtFlag  *bool
 	inputFile  *string
 	outputFile *string
 	pres       *string
 )
 
+func init() {
+	{
+		var b bool
+		listFlag = &b
+	}
+	{
+		var s string
+		inputFile = &s
+	}
+	{
+		var s string
+		outputFile = &s
+	}
+	{
+		var s string
+		pres = &s
+	}
+}
+
 func main() {
 	// flags
 	listFlag = flag.Bool("l", false, "show list of preprocessor names")
-	gofmtFlag = flag.Bool("f", false, "gofmt output file")
 	inputFile = flag.String("i", "", "name of input Go source")
 	outputFile = flag.String("o", "", "name of output Go source")
 	pres = flag.String("p", "", "allowable preprocessors #ifdef...#endif")
@@ -58,32 +77,13 @@ func main() {
 		return
 	}
 
-	err := change()
-	if err != nil {
+	if err := change(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v", err)
 		return
 	}
-
-	if *gofmtFlag {
-		// gofmt
-		cmd := exec.Command("gofmt", "-s", "-w", *outputFile)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error in gofmt: %v", err)
-			return
-		}
-		fmt.Fprintf(osStdout, string(out))
-		// goimports
-		cmd = exec.Command("goimports", "-w", *outputFile)
-		out, err = cmd.CombinedOutput()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error in goimports: %v", err)
-			return
-		}
-		fmt.Fprintf(osStdout, string(out))
-	}
 }
 
+// list of preprocessors
 func list() error {
 	b, err := ioutil.ReadFile(*inputFile)
 	if err != nil {
@@ -94,24 +94,41 @@ func list() error {
 	var names []string
 	for i := range lines {
 		// filter
-		if !bytes.Contains(lines[i], []byte(beginToken)) {
+		if !bytes.Contains(lines[i], []byte(ifdefToken)) {
 			continue
 		}
 
 		// find name
-		index := bytes.Index(lines[i], []byte(beginToken))
+		index := bytes.Index(lines[i], []byte(ifdefToken))
 		if index < 0 {
 			continue
 		}
 
 		// get name
-		name := string(lines[i][index+len(beginToken):])
-		names = append(names, strings.TrimSpace(name))
+		name := string(lines[i][index+len(ifdefToken):])
+		ls := strings.Split(name, " ")
+		for j := range ls {
+			ls[j] = strings.TrimSpace(ls[j])
+			if ls[j] == "" {
+				continue
+			}
+			names = append(names, ls[j])
+		}
 	}
 
 	// show names
 	fmt.Fprintf(osStdout, "Preprocessor names :\n")
-	for i := range names {
+	sort.Strings(names)
+	for i := 0; i < len(names); i++ {
+		isUniq := true
+		for j := i + 1; j < len(names); j++ {
+			if names[i] == names[j] {
+				isUniq = false
+			}
+		}
+		if !isUniq {
+			continue
+		}
 		fmt.Fprintf(osStdout, "* %s\n", names[i])
 	}
 
@@ -129,21 +146,33 @@ func change() error {
 	lines := bytes.Split(b, []byte("\n"))
 	var buf bytes.Buffer
 	addLine := true
+
+	kv := map[string]string{}
+
 	for i := range lines {
-		// beginToken
-		index := bytes.Index(lines[i], []byte(beginToken))
-		if index >= 0 {
-			// get name
-			name := strings.TrimSpace(string(lines[i][index+len(beginToken):]))
-			addLine = true
-			if name == ps {
-				addLine = false
+		line := string(lines[i])
+
+		// ifdefToken
+		has, found := hasIfdef(line, ps)
+		if has {
+			addLine = false
+			if found {
+				addLine = true
 			}
 			continue
 		}
 
-		// finishToken
-		index = bytes.Index(lines[i], []byte(finishToken))
+		// kvToken
+		has, found, key, value := hasKv(line, ps)
+		if has {
+			if found {
+				kv[key] = value
+			}
+			continue
+		}
+
+		// endToken
+		index := strings.Index(line, endToken)
 		if index >= 0 {
 			// get name
 			addLine = true
@@ -154,9 +183,71 @@ func change() error {
 			continue
 		}
 
-		buf.Write(lines[i])
+		// key-value changing
+		for k, v := range kv {
+			line = strings.Replace(line, "#"+k, v, -1)
+		}
+
+		buf.WriteString(line)
 		buf.Write([]byte("\n"))
 	}
 
-	return ioutil.WriteFile(*outputFile, buf.Bytes(), 0644)
+	err = ioutil.WriteFile(*outputFile, buf.Bytes(), 0644)
+	if err != nil {
+		return err
+	}
+
+	// gofmt
+	_, _ = exec.Command("gofmt", "-s", "-w", *outputFile).CombinedOutput()
+	// goimports
+	_, _ = exec.Command("goimports", "-w", *outputFile).CombinedOutput()
+
+	return nil
+}
+
+func hasIfdef(line, ps string) (has, found bool) {
+	index := strings.Index(line, ifdefToken)
+	if index >= 0 {
+		has = true
+		preprocessors := strings.Split(line[index+len(ifdefToken):], " ")
+		for i := range preprocessors {
+			preprocessors[i] = strings.TrimSpace(preprocessors[i])
+			if preprocessors[i] == "" {
+				continue
+			}
+			if preprocessors[i] == ps {
+				found = true
+				break
+			}
+		}
+	}
+	return
+}
+
+func hasKv(line, ps string) (has, found bool, key, value string) {
+	index := strings.Index(line, kvToken)
+	if index >= 0 {
+		has = true
+		// example : preprocessors = "Float32 keys:value"
+		preprocessors := strings.TrimSpace(line[index+len(kvToken):])
+		index = strings.Index(preprocessors, " ")
+		if index < 0 {
+			return
+		}
+		if preprocessors[:index] != ps {
+			return
+		}
+		found = true
+		preprocessors = preprocessors[index:]
+
+		// example : preprocessors = "keys:value"
+		preprocessors = strings.TrimSpace(preprocessors)
+		index = strings.Index(preprocessors, ":")
+		if index < 0 {
+			return
+		}
+		key = preprocessors[:index]
+		value = preprocessors[index+1:]
+	}
+	return
 }

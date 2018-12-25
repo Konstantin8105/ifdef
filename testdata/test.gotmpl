@@ -10,7 +10,26 @@ package test
 // a2 function return zero value of float64
 func a2() float64{
 // #endif
+// #ifdef pre1 pre2
 // templorary variable
 	b := 0
 	return b
 }
+// #endif
+
+// #kv Float64 short:F64
+// #kv Float64 type:float64
+// #kv Float32 short:F32
+// #kv Float32 type:float32
+
+// #ifdef Float64 Float32
+
+// Min#short return minimal of 2 values with type `#type`
+func Min#short(a,b #type) #type{
+	if a > b {
+	return b
+	}
+	return a
+}
+
+// #endif
