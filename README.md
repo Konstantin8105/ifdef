@@ -4,8 +4,10 @@
 
 ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
 
+
+**Preprocessor pattern**:
 ```
-// #ifdef MACRO
+// #ifdef MACRO_NAME
 
 controlled text
 
@@ -22,15 +24,16 @@ go install
 
 ```cmd
 ./ifdef -h
-#Usage of ./ifdef:
-#  -f	gofmt output file
-#  -i string
-#    	name of input Go source
-#  -l	show list of preprocessor names
-#  -o string
-#    	name of output Go source
-#  -p string
-#    	allowable preprocessors #ifdef...#endif
+```
+```
+Usage of ./ifdef:
+  -i string
+    	name of input Go source
+  -l	show list of preprocessor names
+  -o string
+    	name of output Go source
+  -p string
+    	allowable preprocessors #ifdef...#endif
 ```
 
 ### Example on test file
