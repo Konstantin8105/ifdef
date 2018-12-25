@@ -115,8 +115,8 @@ func a2() float64{
 Example of generate `pre2`:
 
 ```cmd
-# generate file `pre2.go` with preprocessor flag `pre2` with `gofmt` result Go source
-ifdef -p=pre2 -i=./testdata/test.gotmpl -o=./testdata/pre2.go -f
+# generate file `pre2.go` with preprocessor flag `pre2`
+ifdef -p=pre2 -i=./testdata/test.gotmpl -o=./testdata/pre2.go
 ```
 
 
