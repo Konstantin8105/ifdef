@@ -19,16 +19,33 @@ const (
 
 var (
 	listFlag   *bool
-	gofmtFlag  *bool
 	inputFile  *string
 	outputFile *string
 	pres       *string
 )
 
+func init() {
+	{
+		var b bool
+		listFlag = &b
+	}
+	{
+		var s string
+		inputFile = &s
+	}
+	{
+		var s string
+		outputFile = &s
+	}
+	{
+		var s string
+		pres = &s
+	}
+}
+
 func main() {
 	// flags
 	listFlag = flag.Bool("l", false, "show list of preprocessor names")
-	gofmtFlag = flag.Bool("f", false, "gofmt output file")
 	inputFile = flag.String("i", "", "name of input Go source")
 	outputFile = flag.String("o", "", "name of output Go source")
 	pres = flag.String("p", "", "allowable preprocessors #ifdef...#endif")
@@ -64,24 +81,10 @@ func main() {
 		return
 	}
 
-	if *gofmtFlag {
-		// gofmt
-		cmd := exec.Command("gofmt", "-s", "-w", *outputFile)
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error in gofmt: %v", err)
-			return
-		}
-		fmt.Fprintf(osStdout, string(out))
-		// goimports
-		cmd = exec.Command("goimports", "-w", *outputFile)
-		out, err = cmd.CombinedOutput()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error in goimports: %v", err)
-			return
-		}
-		fmt.Fprintf(osStdout, string(out))
-	}
+	// gofmt
+	_, _ = exec.Command("gofmt", "-s", "-w", *outputFile).CombinedOutput()
+	// goimports
+	_, _ = exec.Command("goimports", "-w", *outputFile).CombinedOutput()
 }
 
 func list() error {
