@@ -8,7 +8,7 @@
 ### Preprocessor pattern
 
 ```golang
-// #ifdef MACRO_NAME
+// #ifdef LIST_OF_MACRO_NAMES
 
 controlled text
 
@@ -20,6 +20,7 @@ controlled text
 ```golang
 // #kv MACRO_NAME key:value
 ```
+That pattern are removed at the result source.
 
 Example:
 ```golang

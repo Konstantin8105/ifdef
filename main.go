@@ -87,6 +87,7 @@ func main() {
 	_, _ = exec.Command("goimports", "-w", *outputFile).CombinedOutput()
 }
 
+// list of preprocessors
 func list() error {
 	b, err := ioutil.ReadFile(*inputFile)
 	if err != nil {
@@ -109,7 +110,14 @@ func list() error {
 
 		// get name
 		name := string(lines[i][index+len(beginToken):])
-		names = append(names, strings.TrimSpace(name))
+		ls := strings.Split(name, " ")
+		for j := range ls {
+			ls[j] = strings.TrimSpace(ls[j])
+			if ls[j] == "" {
+				continue
+			}
+			names = append(names, ls[j])
+		}
 	}
 
 	// show names

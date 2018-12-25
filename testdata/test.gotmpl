@@ -14,3 +14,20 @@ func a2() float64{
 	b := 0
 	return b
 }
+
+// #kv Float64 short:F64
+// #kv Float64 type:float64
+// #kv Float32 short:F32
+// #kv Float32 type:float32
+
+// #ifdef Float64 Float32
+
+// Min#short return minimal of 2 values with type #type
+func Min#short(a,b #type) #type{
+	if a > b {
+		return b
+	}
+	return a
+}
+
+// #endif

@@ -41,7 +41,7 @@ func Test(t *testing.T) {
 		}
 
 		s1 := string(b)
-		s2 := "Preprocessor names :\n* pre1\n* pre2\n"
+		s2 := "Preprocessor names :\n* pre1\n* pre2\n* Float64\n* Float32\n"
 		if strings.Compare(s1, s2) != 0 {
 			t.Fatalf("Not equal:\n%s\n%s", s1, s2)
 		}
